@@ -1,4 +1,4 @@
-using System;
+ using System;
 using System.Runtime.InteropServices;
 using Unity.Mathematics;
 using UnityEngine;
@@ -17,7 +17,7 @@ public class ParticleSimulation : MonoBehaviour {
     [SerializeField] private float particleRadius = 0.2f;
     [SerializeField] private float simulationSize = 30f;
     [SerializeField] private float G = 6.674f;
-    [SerializeField] private float timeScale = 0.003f;
+    [SerializeField] private float timeScale = 0.003f;  
     [SerializeField] private float softening = 0.5f;
 
     private ComputeBuffer particleBuffer;
