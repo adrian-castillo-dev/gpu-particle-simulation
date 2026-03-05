@@ -87,7 +87,7 @@ void ComputeParticleLifeForces (uint3 id : SV_DispatchThreadID)
     totalForce *= rMax;
     particle.velocity *= frictionFactor;
     particle.velocity += totalForce * deltaTime;
-    particle.position += particle.velocity;
+    particle.position += particle.velocity * deltaTime;
 
     particleWriteBuffer[i] = particle;
 }

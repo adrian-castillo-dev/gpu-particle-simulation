@@ -49,19 +49,19 @@ public class SimulationManger : MonoBehaviour {
    private ComputeBuffer matrixReadBuffer;
 
    private void Start() {
-      attractionMatrix = makeRandomMatrix();
-      frictionFactor = Mathf.Pow(0.5f, dt / frictionHalfLife);
+      InitializeComputeBuffers();
       
       gravityKernelHandle = computeShader.FindKernel("ComputeGravity");
       particleLifeKernelHandle = computeShader.FindKernel("ComputeParticleLifeForces");
-      
+
       args[0] = mesh.GetIndexCount(0);
       args[1] = (uint)particleCount;
       args[2] = mesh.GetIndexStart(0);
       args[3] = mesh.GetBaseVertex(0);
       args[4] = 0;
 
-      InitializeComputeBuffers();
+      attractionMatrix = makeRandomMatrix();
+      frictionFactor = Mathf.Pow(0.5f, dt / frictionHalfLife);
       
       Particle[] particles = new Particle[particleCount];
 
@@ -71,8 +71,6 @@ public class SimulationManger : MonoBehaviour {
          particles[i].mass = Random.Range(0.2f, 1f);
          particles[i].type = Random.Range(0, types);
       }
-
-      
       
       argsBuffer.SetData(args);
       particleReadBuffer.SetData(particles);
@@ -102,17 +100,8 @@ public class SimulationManger : MonoBehaviour {
    private void Update() {
       DispatchComputeShaders();
       
-      material.SetFloat("_Radius", radius);
-      material.SetInt("nTypes", types);
-      computeShader.SetFloat("deltaTime", Time.deltaTime * TimeScale);
-      computeShader.SetFloat("softening", softening);
-      computeShader.SetFloat("G", G);
-      computeShader.SetFloat("rMax", rMax);
-      computeShader.SetFloat("frictionFactor", frictionFactor);
-      computeShader.SetFloat("forceFactor", forceFactor);
-      computeShader.SetFloat("nTypes", types);
-
-
+      SetMaterialVariables();
+      SetComputeVariables();
       
       Graphics.DrawMeshInstancedIndirect(
          mesh,
@@ -121,7 +110,6 @@ public class SimulationManger : MonoBehaviour {
          new Bounds(Vector3.zero, Vector3.one * 10000f),
          argsBuffer
       );
-      
       SwapParticleBuffers();
    }
 
@@ -134,6 +122,21 @@ public class SimulationManger : MonoBehaviour {
             computeShader.Dispatch(particleLifeKernelHandle, Mathf.CeilToInt(particleCount / 128f), 1, 1);
             break;
       }
+   }
+
+   private void SetMaterialVariables(){
+      material.SetFloat("_Radius", radius);
+      material.SetInt("nTypes", types);
+   }
+
+   private void SetComputeVariables(){
+      computeShader.SetFloat("deltaTime", Time.deltaTime * TimeScale);
+      computeShader.SetFloat("softening", softening);
+      computeShader.SetFloat("G", G);
+      computeShader.SetFloat("rMax", rMax);
+      computeShader.SetFloat("frictionFactor", frictionFactor);
+      computeShader.SetFloat("forceFactor", forceFactor);
+      computeShader.SetFloat("nTypes", types);
    }
 
    private void InitializeComputeBuffers() {
