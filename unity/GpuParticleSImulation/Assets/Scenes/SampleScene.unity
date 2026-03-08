@@ -206,6 +206,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!33 &55126374
 MeshFilter:
@@ -410,14 +411,14 @@ Light:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 410087039}
   m_Enabled: 1
-  serializedVersion: 11
+  serializedVersion: 12
   m_Type: 1
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Intensity: 2
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
-  m_CookieSize: 10
+  m_CookieSize2D: {x: 10, y: 10}
   m_Shadows:
     m_Type: 2
     m_Resolution: -1
@@ -569,8 +570,8 @@ MonoBehaviour:
   softening: 4
   G: 2
   frictionHalfLife: 0.008
-  rMax: 13.1
-  forceFactor: 0.4
+  rMax: 25
+  forceFactor: 2
 --- !u!114 &684769314
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -2,13 +2,6 @@ using System;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-struct Particle {
-   public Vector3 position;
-   public Vector3 velocity;
-   public float mass;
-   public int type;
-}
-
 public class SimulationManger : MonoBehaviour {
    private enum ParticleBehavior {
       Gravity,
@@ -54,13 +47,14 @@ public class SimulationManger : MonoBehaviour {
       gravityKernelHandle = computeShader.FindKernel("ComputeGravity");
       particleLifeKernelHandle = computeShader.FindKernel("ComputeParticleLifeForces");
 
+      // Rendering args
       args[0] = mesh.GetIndexCount(0);
       args[1] = (uint)particleCount;
       args[2] = mesh.GetIndexStart(0);
       args[3] = mesh.GetBaseVertex(0);
       args[4] = 0;
 
-      attractionMatrix = makeRandomMatrix();
+      attractionMatrix = makeRandomMatrix(); // particle life's attraction matrix
       frictionFactor = Mathf.Pow(0.5f, dt / frictionHalfLife);
       
       Particle[] particles = new Particle[particleCount];
@@ -75,41 +69,20 @@ public class SimulationManger : MonoBehaviour {
       argsBuffer.SetData(args);
       particleReadBuffer.SetData(particles);
       matrixReadBuffer.SetData(attractionMatrix);
-      
-      material.SetBuffer("particleBuffer", particleReadBuffer);
-      material.SetFloat("_Radius", radius);
-      material.SetInt("nTypes", types);
-      
-      computeShader.SetBuffer(gravityKernelHandle, "particleReadBuffer", particleReadBuffer);
-      computeShader.SetBuffer(gravityKernelHandle, "particleWriteBuffer", particleWriteBuffer);
-      
-      computeShader.SetBuffer(particleLifeKernelHandle, "particleReadBuffer", particleReadBuffer);
-      computeShader.SetBuffer(particleLifeKernelHandle, "particleWriteBuffer", particleWriteBuffer);
-      computeShader.SetBuffer(particleLifeKernelHandle, "attractionMatrix", matrixReadBuffer);
-      
-      computeShader.SetInt("nParticles", particleCount);
-      computeShader.SetFloat("softening", softening);
-      computeShader.SetFloat("G", G);
-      computeShader.SetFloat("rMax", rMax);
-      computeShader.SetFloat("frictionFactor", frictionFactor);
-      computeShader.SetFloat("forceFactor", forceFactor);
-      computeShader.SetFloat("nTypes", types);
 
+      SetComputeSetupVariables();
+      SetMaterialSetupVariables();
+   
    }
 
    private void Update() {
       DispatchComputeShaders();
       
-      SetMaterialVariables();
-      SetComputeVariables();
+      SetMaterialRuntimeVariables();
+      SetComputeRuntimeVariables();
       
-      Graphics.DrawMeshInstancedIndirect(
-         mesh,
-         0,
-         material,
-         new Bounds(Vector3.zero, Vector3.one * 10000f),
-         argsBuffer
-      );
+      Graphics.DrawMeshInstancedIndirect(mesh, 0, material, new Bounds(Vector3.zero, Vector3.one * 10000f), argsBuffer);
+
       SwapParticleBuffers();
    }
 
@@ -124,12 +97,12 @@ public class SimulationManger : MonoBehaviour {
       }
    }
 
-   private void SetMaterialVariables(){
+   private void SetMaterialRuntimeVariables(){
       material.SetFloat("_Radius", radius);
       material.SetInt("nTypes", types);
    }
 
-   private void SetComputeVariables(){
+   private void SetComputeRuntimeVariables(){
       computeShader.SetFloat("deltaTime", Time.deltaTime * TimeScale);
       computeShader.SetFloat("softening", softening);
       computeShader.SetFloat("G", G);
@@ -137,6 +110,29 @@ public class SimulationManger : MonoBehaviour {
       computeShader.SetFloat("frictionFactor", frictionFactor);
       computeShader.SetFloat("forceFactor", forceFactor);
       computeShader.SetFloat("nTypes", types);
+   }
+
+   private void SetComputeSetupVariables(){
+      computeShader.SetBuffer(gravityKernelHandle, "particleReadBuffer", particleReadBuffer);
+      computeShader.SetBuffer(gravityKernelHandle, "particleWriteBuffer", particleWriteBuffer);
+      
+      computeShader.SetBuffer(particleLifeKernelHandle, "particleReadBuffer", particleReadBuffer);
+      computeShader.SetBuffer(particleLifeKernelHandle, "particleWriteBuffer", particleWriteBuffer);
+      computeShader.SetBuffer(particleLifeKernelHandle, "attractionMatrix", matrixReadBuffer);
+      
+      computeShader.SetInt("nParticles", particleCount);
+      computeShader.SetFloat("softening", softening);
+      computeShader.SetFloat("G", G);
+      computeShader.SetFloat("rMax", rMax);
+      computeShader.SetFloat("frictionFactor", frictionFactor);
+      computeShader.SetFloat("forceFactor", forceFactor);
+      computeShader.SetFloat("nTypes", types);
+   }
+
+   private void SetMaterialSetupVariables(){
+      material.SetBuffer("particleBuffer", particleReadBuffer);
+      material.SetFloat("_Radius", radius);
+      material.SetInt("nTypes", types);
    }
 
    private void InitializeComputeBuffers() {
@@ -147,11 +143,11 @@ public class SimulationManger : MonoBehaviour {
       );
       particleReadBuffer = new ComputeBuffer(
          particleCount,
-         sizeof(float) * 6 + sizeof(int) + sizeof(float)
+         Particle.Size
       );
       particleWriteBuffer = new ComputeBuffer(
          particleCount,
-         sizeof(float) * 6 + sizeof(int) + sizeof(float)
+         Particle.Size
       );
       matrixReadBuffer = new ComputeBuffer(
          types * types,
@@ -178,7 +174,7 @@ public class SimulationManger : MonoBehaviour {
       
    }
 
-   // Make the attraction matrix for particle life
+   // Returns a random matrix based on the number of types for the particle life simulation
    private float[] makeRandomMatrix() {
       float[] matrix = new float[types * types];
       for (int row = 0; row < types; row++) {
