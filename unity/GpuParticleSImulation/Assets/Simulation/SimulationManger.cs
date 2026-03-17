@@ -37,11 +37,12 @@ public class SimulationManger : MonoBehaviour {
    private int particleLifeKernelHandle;
    private uint[] args = new uint[5];
    private ComputeBuffer argsBuffer;
-   private ComputeBuffer particleReadBuffer;
-   private ComputeBuffer particleWriteBuffer;
+   private ParticleBufferManager buffers;
    private ComputeBuffer matrixReadBuffer;
 
-   private void Start() {
+   private void Start()
+   {
+      buffers = new ParticleBufferManager(particleCount);
       InitializeComputeBuffers();
       
       gravityKernelHandle = computeShader.FindKernel("ComputeGravity");
@@ -67,7 +68,7 @@ public class SimulationManger : MonoBehaviour {
       }
       
       argsBuffer.SetData(args);
-      particleReadBuffer.SetData(particles);
+      buffers.Read.SetData(particles);
       matrixReadBuffer.SetData(attractionMatrix);
 
       SetComputeSetupVariables();
@@ -84,6 +85,12 @@ public class SimulationManger : MonoBehaviour {
       Graphics.DrawMeshInstancedIndirect(mesh, 0, material, new Bounds(Vector3.zero, Vector3.one * 10000f), argsBuffer);
 
       SwapParticleBuffers();
+   }
+
+   private void InitializeComputeBuffers()
+   {
+      argsBuffer = new ComputeBuffer( 1, args.Length * sizeof(uint), ComputeBufferType.IndirectArguments );
+      matrixReadBuffer = new ComputeBuffer( types * types, sizeof(float) );
    }
 
    private void DispatchComputeShaders() {
@@ -113,11 +120,11 @@ public class SimulationManger : MonoBehaviour {
    }
 
    private void SetComputeSetupVariables(){
-      computeShader.SetBuffer(gravityKernelHandle, "particleReadBuffer", particleReadBuffer);
-      computeShader.SetBuffer(gravityKernelHandle, "particleWriteBuffer", particleWriteBuffer);
+      computeShader.SetBuffer(gravityKernelHandle, "particleReadBuffer", buffers.Read);
+      computeShader.SetBuffer(gravityKernelHandle, "particleWriteBuffer", buffers.Write);
       
-      computeShader.SetBuffer(particleLifeKernelHandle, "particleReadBuffer", particleReadBuffer);
-      computeShader.SetBuffer(particleLifeKernelHandle, "particleWriteBuffer", particleWriteBuffer);
+      computeShader.SetBuffer(particleLifeKernelHandle, "particleReadBuffer", buffers.Read);
+      computeShader.SetBuffer(particleLifeKernelHandle, "particleWriteBuffer", buffers.Write);
       computeShader.SetBuffer(particleLifeKernelHandle, "attractionMatrix", matrixReadBuffer);
       
       computeShader.SetInt("nParticles", particleCount);
@@ -130,45 +137,24 @@ public class SimulationManger : MonoBehaviour {
    }
 
    private void SetMaterialSetupVariables(){
-      material.SetBuffer("particleBuffer", particleReadBuffer);
+      material.SetBuffer("particleBuffer", buffers.Read);
       material.SetFloat("_Radius", radius);
       material.SetInt("nTypes", types);
    }
-
-   private void InitializeComputeBuffers() {
-      argsBuffer = new ComputeBuffer(
-         1,
-         args.Length * sizeof(uint),
-         ComputeBufferType.IndirectArguments
-      );
-      particleReadBuffer = new ComputeBuffer(
-         particleCount,
-         Particle.Size
-      );
-      particleWriteBuffer = new ComputeBuffer(
-         particleCount,
-         Particle.Size
-      );
-      matrixReadBuffer = new ComputeBuffer(
-         types * types,
-         sizeof(float)
-      );   
-   }
+   
 
    private void SwapParticleBuffers() {
-      ComputeBuffer temp = particleReadBuffer;
-      particleReadBuffer = particleWriteBuffer;
-      particleWriteBuffer = temp;
+      buffers.Swap();
       
-      material.SetBuffer("particleBuffer", particleReadBuffer);
+      material.SetBuffer("particleBuffer", buffers.Read);
       switch (particleBehavior) {
          case ParticleBehavior.Gravity:
-            computeShader.SetBuffer(gravityKernelHandle, "particleReadBuffer", particleReadBuffer);
-            computeShader.SetBuffer(gravityKernelHandle, "particleWriteBuffer", particleWriteBuffer);
+            computeShader.SetBuffer(gravityKernelHandle, "particleReadBuffer", buffers.Read);
+            computeShader.SetBuffer(gravityKernelHandle, "particleWriteBuffer", buffers.Write);
             break;
          case ParticleBehavior.ParticleLife:
-            computeShader.SetBuffer(particleLifeKernelHandle, "particleReadBuffer", particleReadBuffer);
-            computeShader.SetBuffer(particleLifeKernelHandle, "particleWriteBuffer", particleWriteBuffer);
+            computeShader.SetBuffer(particleLifeKernelHandle, "particleReadBuffer", buffers.Read);
+            computeShader.SetBuffer(particleLifeKernelHandle, "particleWriteBuffer", buffers.Write);
             break;
       }
       
@@ -190,8 +176,8 @@ public class SimulationManger : MonoBehaviour {
       // Release compute buffers
       if (enabled) {
          argsBuffer.Release();
-         particleReadBuffer.Release();
-         particleWriteBuffer.Release();
+         buffers.Read.Release();
+         buffers.Write.Release();
          matrixReadBuffer.Release();
       }
    }
