@@ -35,25 +35,19 @@ public class SimulationManger : MonoBehaviour {
    
    private int gravityKernelHandle;
    private int particleLifeKernelHandle;
-   private uint[] args = new uint[5];
-   private ComputeBuffer argsBuffer;
+
+   private ParticleRenderer renderer;
    private ParticleBufferManager buffers;
    private ComputeBuffer matrixReadBuffer;
 
    private void Start()
    {
       buffers = new ParticleBufferManager(particleCount);
+      renderer = new ParticleRenderer(mesh, material, particleCount);
       InitializeComputeBuffers();
       
       gravityKernelHandle = computeShader.FindKernel("ComputeGravity");
       particleLifeKernelHandle = computeShader.FindKernel("ComputeParticleLifeForces");
-
-      // Rendering args
-      args[0] = mesh.GetIndexCount(0);
-      args[1] = (uint)particleCount;
-      args[2] = mesh.GetIndexStart(0);
-      args[3] = mesh.GetBaseVertex(0);
-      args[4] = 0;
 
       attractionMatrix = makeRandomMatrix(); // particle life's attraction matrix
       frictionFactor = Mathf.Pow(0.5f, dt / frictionHalfLife);
@@ -67,8 +61,8 @@ public class SimulationManger : MonoBehaviour {
          particles[i].type = Random.Range(0, types);
       }
       
-      argsBuffer.SetData(args);
       buffers.Read.SetData(particles);
+      renderer.SetParticleBuffer(buffers.Read);
       matrixReadBuffer.SetData(attractionMatrix);
 
       SetComputeSetupVariables();
@@ -77,19 +71,20 @@ public class SimulationManger : MonoBehaviour {
    }
 
    private void Update() {
+      renderer.Render();
+      
       DispatchComputeShaders();
       
       SetMaterialRuntimeVariables();
       SetComputeRuntimeVariables();
       
-      Graphics.DrawMeshInstancedIndirect(mesh, 0, material, new Bounds(Vector3.zero, Vector3.one * 10000f), argsBuffer);
+      
 
       SwapParticleBuffers();
    }
 
    private void InitializeComputeBuffers()
    {
-      argsBuffer = new ComputeBuffer( 1, args.Length * sizeof(uint), ComputeBufferType.IndirectArguments );
       matrixReadBuffer = new ComputeBuffer( types * types, sizeof(float) );
    }
 
@@ -145,6 +140,7 @@ public class SimulationManger : MonoBehaviour {
 
    private void SwapParticleBuffers() {
       buffers.Swap();
+      renderer.SetParticleBuffer(buffers.Read);
       
       material.SetBuffer("particleBuffer", buffers.Read);
       switch (particleBehavior) {
@@ -175,9 +171,7 @@ public class SimulationManger : MonoBehaviour {
    private void OnDestroy() {
       // Release compute buffers
       if (enabled) {
-         argsBuffer.Release();
-         buffers.Read.Release();
-         buffers.Write.Release();
+         buffers.Release();
          matrixReadBuffer.Release();
       }
    }
