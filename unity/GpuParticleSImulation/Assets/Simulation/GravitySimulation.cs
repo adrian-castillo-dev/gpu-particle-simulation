@@ -4,8 +4,8 @@ public class GravitySimulation : ParticleSimulation
 {
     private int kernel;
 
-    public float G;
-    public float softening;
+    public float G = 1.0f;
+    public float softening = 0.5f;
 
     public GravitySimulation(ComputeShader shader, ParticleBufferManager buffers) : base(shader, buffers)
     {
