@@ -77,8 +77,6 @@ public class SimulationManger : MonoBehaviour {
       
       SetMaterialRuntimeVariables();
       SetComputeRuntimeVariables();
-      
-      
 
       SwapParticleBuffers();
    }
@@ -171,6 +169,7 @@ public class SimulationManger : MonoBehaviour {
    private void OnDestroy() {
       // Release compute buffers
       if (enabled) {
+         renderer.Release();
          buffers.Release();
          matrixReadBuffer.Release();
       }
