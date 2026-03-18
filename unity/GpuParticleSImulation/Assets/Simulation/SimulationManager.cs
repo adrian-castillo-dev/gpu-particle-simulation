@@ -16,8 +16,7 @@ public class SimulationManger : MonoBehaviour {
    [SerializeField] private int types;
    
    [Header("Gravity settings")]
-   [SerializeField] private float softening = 0.5f;
-   [SerializeField] private float G;
+   [SerializeField] private GravitySettings gravitySettings;
 
    [Header("Particle Life settings")] 
    [SerializeField] private float frictionHalfLife = 0.004f;
@@ -61,7 +60,7 @@ public class SimulationManger : MonoBehaviour {
 
       SetMaterialSetupVariables();
 
-      gravitySimulation = new GravitySimulation(computeShader, buffers);
+      gravitySimulation = new GravitySimulation(computeShader, buffers, gravitySettings);
 
    }
 

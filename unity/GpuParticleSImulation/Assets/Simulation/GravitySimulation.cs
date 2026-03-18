@@ -3,12 +3,12 @@ using UnityEngine;
 public class GravitySimulation : ParticleSimulation
 {
     private int kernel;
+    private GravitySettings settings;
 
-    public float G = 1.0f;
-    public float softening = 0.5f;
-
-    public GravitySimulation(ComputeShader shader, ParticleBufferManager buffers) : base(shader, buffers)
+    public GravitySimulation(ComputeShader shader, ParticleBufferManager buffers, GravitySettings settings) : base(shader, buffers)
     {
+        this.settings = settings;
+        
         kernel = shader.FindKernel("ComputeGravity");
         
         shader.SetBuffer(kernel, "particleReadBuffer", buffers.Read);
@@ -20,8 +20,8 @@ public class GravitySimulation : ParticleSimulation
     public override void Step(float dt)
     {
         shader.SetFloat("deltaTime", dt);
-        shader.SetFloat("G", G);
-        shader.SetFloat("softening", softening);
+        shader.SetFloat("G", settings.G);
+        shader.SetFloat("softening", settings.softening);
         
         shader.Dispatch(kernel, buffers.ThreadGroups, 1, 1);
 
