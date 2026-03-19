@@ -319,7 +319,7 @@ Transform:
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -160.5}
+  m_LocalPosition: {x: 0, y: 1, z: -578.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -564,12 +564,9 @@ MonoBehaviour:
   radius: 0.45
   simulationSize: 200
   initialSpeed: 0
-  TimeScale: 1
-  types: 6
+  TimeScale: 2
   gravitySettings: {fileID: 11400000, guid: 330b65ab920c3124ebd26ede8ef37ff5, type: 2}
-  frictionHalfLife: 0.008
-  rMax: 25
-  forceFactor: 2
+  particleLifeSettings: {fileID: 11400000, guid: 33ac17066cdb10a479e6bc5b4c84ae5c, type: 2}
 --- !u!114 &684769314
 MonoBehaviour:
   m_ObjectHideFlags: 0
