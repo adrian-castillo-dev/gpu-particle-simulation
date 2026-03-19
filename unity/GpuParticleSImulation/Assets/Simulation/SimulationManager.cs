@@ -2,7 +2,9 @@ using System;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-public class SimulationManger : MonoBehaviour {
+namespace Simulation
+{
+   public class SimulationManger : MonoBehaviour {
    
    [Header("Simulation")]
    [SerializeField] private Mesh mesh;
@@ -112,3 +114,5 @@ public class SimulationManger : MonoBehaviour {
       }
    }
 }
+}
+

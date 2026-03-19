@@ -1,34 +1,44 @@
 using UnityEngine;
 
-public class GravitySimulation : ParticleSimulation
+namespace Simulation
 {
-    private int kernel;
-    private GravitySettings settings;
-
-    public GravitySimulation(ComputeShader shader, ParticleBufferManager buffers, GravitySettings settings) : base(shader, buffers)
+    public class GravitySimulation : ParticleSimulation<GravitySettings>
     {
-        this.settings = settings;
+        private int kernel;
+        private GravitySettings settings;
+
+        public GravitySimulation(ComputeShader shader, ParticleBufferManager buffers, GravitySettings settings) : base(shader, buffers, settings)
+        {
+            this.settings = settings;
         
-        kernel = shader.FindKernel("ComputeGravity");
+            kernel = shader.FindKernel("ComputeGravity");
         
-        shader.SetBuffer(kernel, "particleReadBuffer", buffers.Read);
-        shader.SetBuffer(kernel, "particleWriteBuffer", buffers.Write);
+            shader.SetBuffer(kernel, "particleReadBuffer", buffers.Read);
+            shader.SetBuffer(kernel, "particleWriteBuffer", buffers.Write);
         
-        shader.SetInt("nParticles", buffers.ParticleCount);
+            shader.SetInt("nParticles", buffers.ParticleCount);
+        }
+
+        public override void Step(float dt)
+        {
+            shader.SetFloat("deltaTime", dt);
+            shader.SetFloat("G", settings.G);
+            shader.SetFloat("softening", settings.softening);
+        
+            shader.Dispatch(kernel, buffers.ThreadGroups, 1, 1);
+
+            buffers.Swap();
+        
+            shader.SetBuffer(kernel, "particleReadBuffer", buffers.Read);
+            shader.SetBuffer(kernel, "particleWriteBuffer", buffers.Write);
+        }
+
+        public override void SetUp()
+        {
+        
+        }
+
     }
-
-    public override void Step(float dt)
-    {
-        shader.SetFloat("deltaTime", dt);
-        shader.SetFloat("G", settings.G);
-        shader.SetFloat("softening", settings.softening);
-        
-        shader.Dispatch(kernel, buffers.ThreadGroups, 1, 1);
-
-        buffers.Swap();
-        
-        shader.SetBuffer(kernel, "particleReadBuffer", buffers.Read);
-        shader.SetBuffer(kernel, "particleWriteBuffer", buffers.Write);
-    }
-
 }
+
+
