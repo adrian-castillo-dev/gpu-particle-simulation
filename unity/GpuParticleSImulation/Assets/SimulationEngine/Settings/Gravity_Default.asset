@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 69861deb975672b41ad2ddcd28a08977, type: 3}
   m_Name: Gravity_Default
   m_EditorClassIdentifier: Assembly-CSharp::GravitySettings
-  G: 1
+  G: 4
   softening: 0.5

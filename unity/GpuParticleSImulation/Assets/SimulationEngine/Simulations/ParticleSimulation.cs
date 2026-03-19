@@ -1,6 +1,7 @@
 using UnityEngine;
+using SimulationEngine.Core;
 
-namespace Simulation
+namespace SimulationEngine.Simulations
 {
     public abstract class ParticleSimulation<TSettings> where TSettings : ScriptableObject
     {

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Simulation/Gravity Settings")]
+[CreateAssetMenu(menuName = "Simulation/GravitySettings")]
 public class GravitySettings : ScriptableObject
 {
     public float G = 1f;

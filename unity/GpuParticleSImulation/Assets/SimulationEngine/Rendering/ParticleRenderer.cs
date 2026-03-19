@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Simulation
+namespace SimulationEngine.Rendering
 {
     public class ParticleRenderer
     {
