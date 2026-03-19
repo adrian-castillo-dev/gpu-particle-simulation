@@ -14,10 +14,10 @@ namespace Simulation
             this.buffers = buffers;
             this.settings = settings;
         }
-
-        public abstract void SetUp();
-    
+        
         public abstract void Step(float dt);
+        
+        public abstract void SetUp();
     }
 }
 
