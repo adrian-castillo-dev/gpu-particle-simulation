@@ -8,7 +8,13 @@ using SimulationEngine.Simulations;
 
 namespace SimulationEngine
 {
-   public class SimulationManger : MonoBehaviour { 
+   public class SimulationManger : MonoBehaviour {
+
+      private enum ParticleBehavior
+      {
+         Gravity,
+         ParticleLife
+      }
      
       [Header("Simulation")]
       [SerializeField] private Mesh mesh;
@@ -18,7 +24,8 @@ namespace SimulationEngine
       [SerializeField] private float radius = 1.0f;
       [SerializeField] private float simulationSize = 10;
       [SerializeField] private uint initialSpeed;
-      [SerializeField] private float TimeScale = 1; 
+      [SerializeField] private ParticleBehavior particleBehavior;
+      
       [Header("Gravity settings")]
       [SerializeField] private GravitySettings gravitySettings;
 
@@ -36,7 +43,52 @@ namespace SimulationEngine
       {
          buffers = new ParticleBufferManager(particleCount);
          renderer = new ParticleRenderer(mesh, material, particleCount);
+         SetMaterialSetupVariables();
+         InitializeParticles();
          
+         renderer.SetParticleBuffer(buffers.Read);
+         // Create Simulations
+         gravitySimulation = new GravitySimulation(computeShader, buffers, gravitySettings);
+         particleLifeSimulation = new ParticleLifeSimulation(computeShader, buffers, particleLifeSettings);
+         // Start Simulations
+         gravitySimulation.SetUp();
+         particleLifeSimulation.SetUp();
+      }
+
+      private void Update() {
+         // Changes the particle behavior at runtime
+         switch (particleBehavior) {
+            case ParticleBehavior.Gravity:
+               gravitySimulation.Step(Time.deltaTime);
+               break;
+            case ParticleBehavior.ParticleLife:
+               particleLifeSimulation.Step(Time.deltaTime);
+               break;
+         }
+         
+         // Render Particles
+         renderer.SetParticleBuffer(buffers.Read);
+         renderer.Render();
+         
+         SetMaterialRuntimeVariables();
+      }
+
+      // Material variables to update at runtime
+      private void SetMaterialRuntimeVariables(){
+         material.SetFloat("_Radius", radius);
+         material.SetInt("nTypes", particleLifeSettings.types);
+      }
+      
+      // Material variables to set once
+      private void SetMaterialSetupVariables(){
+         material.SetBuffer("particleBuffer", buffers.Read);
+         material.SetFloat("_Radius", radius);
+         material.SetInt("nTypes", particleLifeSettings.types);
+      }
+
+      // Generates an array of particles with randomized positions
+      private void InitializeParticles()
+      {
          Particle[] particles = new Particle[particleCount];
 
          for (int i = 0; i < particleCount; i++) {
@@ -47,37 +99,6 @@ namespace SimulationEngine
          }
          
          buffers.Read.SetData(particles);
-         renderer.SetParticleBuffer(buffers.Read);
-
-         SetMaterialSetupVariables();
-
-         gravitySimulation = new GravitySimulation(computeShader, buffers, gravitySettings);
-         particleLifeSimulation = new ParticleLifeSimulation(computeShader, buffers, particleLifeSettings);
-         
-         particleLifeSimulation.SetUp();
-
-      }
-
-      private void Update() {
-         particleLifeSimulation.Step(Time.deltaTime);
-         
-         renderer.SetParticleBuffer(buffers.Read);
-         
-         renderer.Render();
-         
-         SetMaterialRuntimeVariables();
-      }
-      
-
-      private void SetMaterialRuntimeVariables(){
-         material.SetFloat("_Radius", radius);
-         material.SetInt("nTypes", particleLifeSettings.types);
-      }
-
-      private void SetMaterialSetupVariables(){
-         material.SetBuffer("particleBuffer", buffers.Read);
-         material.SetFloat("_Radius", radius);
-         material.SetInt("nTypes", particleLifeSettings.types);
       }
       
       private void OnDestroy() {

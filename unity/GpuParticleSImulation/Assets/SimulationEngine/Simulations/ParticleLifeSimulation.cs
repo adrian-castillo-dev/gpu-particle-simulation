@@ -14,6 +14,7 @@ namespace SimulationEngine.Simulations
         private float frictionFactor;
         
         public ParticleLifeSimulation(ComputeShader shader, ParticleBufferManager buffers, ParticleLifeSettings settings) : base (shader, buffers, settings) {}
+        
 
         public override void SetUp()
         {

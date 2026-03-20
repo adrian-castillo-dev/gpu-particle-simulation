@@ -6,12 +6,13 @@ namespace SimulationEngine.Simulations
     public class GravitySimulation : ParticleSimulation<GravitySettings>
     {
         private int kernel;
-        private GravitySettings settings;
 
-        public GravitySimulation(ComputeShader shader, ParticleBufferManager buffers, GravitySettings settings) : base(shader, buffers, settings)
-        {
-            this.settings = settings;
+        public GravitySimulation(ComputeShader shader, ParticleBufferManager buffers, GravitySettings settings) : base(shader, buffers, settings) {}
+
         
+        
+        public override void SetUp()
+        {
             kernel = shader.FindKernel("ComputeGravity");
         
             shader.SetBuffer(kernel, "particleReadBuffer", buffers.Read);
@@ -19,7 +20,7 @@ namespace SimulationEngine.Simulations
         
             shader.SetInt("nParticles", buffers.ParticleCount);
         }
-
+        
         public override void Step(float dt)
         {
             shader.SetFloat("deltaTime", dt);
@@ -32,11 +33,6 @@ namespace SimulationEngine.Simulations
         
             shader.SetBuffer(kernel, "particleReadBuffer", buffers.Read);
             shader.SetBuffer(kernel, "particleWriteBuffer", buffers.Write);
-        }
-
-        public override void SetUp()
-        {
-            
         }
 
     }
