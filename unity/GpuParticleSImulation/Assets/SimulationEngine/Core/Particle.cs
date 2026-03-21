@@ -10,8 +10,11 @@ namespace SimulationEngine.Core
         public Vector3 velocity;
         public float mass;
         public int type;
+        public Vector3 direction;
+
 
         public const int Size =
+            sizeof(float) * 3 +
             sizeof(float) * 3 +
             sizeof(float) * 3 +
             sizeof(float) +

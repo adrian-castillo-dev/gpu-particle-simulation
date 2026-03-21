@@ -19,6 +19,7 @@ Shader "Custom/UnlitShader"
                 float3 velocity;
                 float mass;
                 int type;
+                float3 direction;
             };
 
             StructuredBuffer<Particle> particleBuffer;

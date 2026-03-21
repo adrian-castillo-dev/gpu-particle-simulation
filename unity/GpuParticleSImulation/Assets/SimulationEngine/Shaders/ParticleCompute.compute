@@ -8,6 +8,7 @@ struct Particle
     float3 velocity;
     float mass;
     int type;
+    float3 direction;
 };
 
 RWStructuredBuffer<Particle> particleWriteBuffer;
@@ -26,6 +27,7 @@ float forceFactor;
 //Boids variables
 float boidsRange;
 float boidsSpeed;
+float boidsTime;
 
 float CalculateForce(float distance, float attraction) {
     float beta = 0.3f;
@@ -102,14 +104,15 @@ void ComputeParticleLifeForces (uint3 id : SV_DispatchThreadID)
 void ComputeBoids (uint3 id : SV_DispatchThreadID)
 {
     int i = id.x;
-    
     if (i >= nParticles) return;
-    
-    float totalForce = 0;
-    
     Particle particle = particleReadBuffer[i];
     
+    particle.direction.y = sin(boidsTime * (boidsSpeed / 2));
     
+    //particle.direction = normalize(particle.direction);
+    particle.velocity = particle.direction;
+    
+    particle.position += particle.velocity * deltaTime * boidsSpeed;
     // Write back to the buffer
     particleWriteBuffer[i] = particle; 
 }

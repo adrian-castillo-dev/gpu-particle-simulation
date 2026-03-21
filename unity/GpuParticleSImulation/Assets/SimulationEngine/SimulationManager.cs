@@ -105,6 +105,8 @@ namespace SimulationEngine
          for (int i = 0; i < particleCount; i++) {
             particles[i].position = Random.insideUnitSphere * simulationSize;
             particles[i].velocity = Random.insideUnitSphere * initialSpeed;
+            //particles[i].direction = Vector3.Normalize(Random.insideUnitSphere * 100);
+            particles[i].direction = new Vector3(1, 0, 0);
             particles[i].mass = Random.Range(0.2f, 1f);
             particles[i].type = Random.Range(0, particleLifeSettings.types);
          }
