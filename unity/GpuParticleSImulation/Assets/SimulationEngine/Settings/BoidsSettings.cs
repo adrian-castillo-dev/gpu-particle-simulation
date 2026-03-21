@@ -2,10 +2,11 @@ using UnityEngine;
 
 namespace SimulationEngine.Settings
 {
-    [CreateAssetMenu(menuName = "Simulation/Buids Settings")]
+    [CreateAssetMenu(menuName = "Simulation/Boids Settings")]
 
     public class BoidsSettings : ScriptableObject
     {
-        public int speed = 5;
+        public float speed = 5;
+        public float range = 8;
     }
 }

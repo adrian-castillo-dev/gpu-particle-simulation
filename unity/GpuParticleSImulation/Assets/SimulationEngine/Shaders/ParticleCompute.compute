@@ -1,5 +1,6 @@
 #pragma kernel ComputeGravity
 #pragma kernel ComputeParticleLifeForces
+#pragma kernel ComputeBoids
 
 struct Particle
 {
@@ -20,6 +21,11 @@ float G;
 float rMax;
 float frictionFactor;
 float forceFactor;
+
+
+//Boids variables
+float boidsRange;
+float boidsSpeed;
 
 float CalculateForce(float distance, float attraction) {
     float beta = 0.3f;
@@ -92,6 +98,20 @@ void ComputeParticleLifeForces (uint3 id : SV_DispatchThreadID)
     particleWriteBuffer[i] = particle;
 }
 
-
+[numthreads(128, 1, 1)]
+void ComputeBoids (uint3 id : SV_DispatchThreadID)
+{
+    int i = id.x;
+    
+    if (i >= nParticles) return;
+    
+    float totalForce = 0;
+    
+    Particle particle = particleReadBuffer[i];
+    
+    
+    // Write back to the buffer
+    particleWriteBuffer[i] = particle; 
+}
 
 

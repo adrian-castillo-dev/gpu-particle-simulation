@@ -5,6 +5,7 @@ using SimulationEngine.Rendering;
 using SimulationEngine.Core;
 using SimulationEngine.Settings;
 using SimulationEngine.Simulations;
+using Unity.VisualScripting;
 
 namespace SimulationEngine
 {
@@ -13,7 +14,8 @@ namespace SimulationEngine
       private enum ParticleBehavior
       {
          Gravity,
-         ParticleLife
+         ParticleLife,
+         Boids
       }
      
       [Header("Simulation")]
@@ -32,12 +34,16 @@ namespace SimulationEngine
       [Header("Particle Life settings")] 
       [SerializeField] private ParticleLifeSettings particleLifeSettings;
       
+      [Header("Boids Settings")]
+      [SerializeField] private BoidsSettings boidsSettings;
+      
       private ParticleRenderer renderer;
       private ParticleBufferManager buffers;
 
       // Simulations
       private GravitySimulation gravitySimulation;
       private ParticleLifeSimulation particleLifeSimulation;
+      private BoidsSimulation boidsSimulation;
 
       private void Start()
       {
@@ -50,9 +56,11 @@ namespace SimulationEngine
          // Create Simulations
          gravitySimulation = new GravitySimulation(computeShader, buffers, gravitySettings);
          particleLifeSimulation = new ParticleLifeSimulation(computeShader, buffers, particleLifeSettings);
+         boidsSimulation = new BoidsSimulation(computeShader, buffers, boidsSettings);
          // Start Simulations
          gravitySimulation.SetUp();
          particleLifeSimulation.SetUp();
+         boidsSimulation.SetUp();
       }
 
       private void Update() {
@@ -63,6 +71,9 @@ namespace SimulationEngine
                break;
             case ParticleBehavior.ParticleLife:
                particleLifeSimulation.Step(Time.deltaTime);
+               break;
+            case ParticleBehavior.Boids:
+               boidsSimulation.Step(Time.deltaTime);
                break;
          }
          
