@@ -12,4 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d17aa0799bda9bd4998cff0d4efe286f, type: 3}
   m_Name: Boids_Default
   m_EditorClassIdentifier: Assembly-CSharp::SimulationEngine.Settings.BoidsSettings
-  speed: 5
+  speed: 12.6
+  range: 107.4

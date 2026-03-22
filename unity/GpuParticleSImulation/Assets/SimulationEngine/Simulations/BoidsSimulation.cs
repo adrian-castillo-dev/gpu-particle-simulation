@@ -21,8 +21,9 @@ namespace SimulationEngine.Simulations
             shader.SetFloat("boidsRange", settings.range);
             shader.SetFloat("boidsSpeed", settings.speed);
             shader.SetFloat("boidsTime", time);
+            shader.SetFloat("boidsWeight", settings.weight);
 
-            
+
         }
 
         public override void Step(float dt)
@@ -32,6 +33,8 @@ namespace SimulationEngine.Simulations
             shader.SetFloat("deltaTime", dt);
             shader.SetFloat("boidsRange", settings.range);
             shader.SetFloat("boidsSpeed", settings.speed);
+            shader.SetFloat("boidsWeight", settings.weight);
+
             shader.SetFloat("boidsTime", time += 1 * dt);
             
             shader.SetBuffer(kernel, "particleReadBuffer", buffers.Read);

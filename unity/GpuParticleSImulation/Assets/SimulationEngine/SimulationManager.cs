@@ -44,6 +44,8 @@ namespace SimulationEngine
       private GravitySimulation gravitySimulation;
       private ParticleLifeSimulation particleLifeSimulation;
       private BoidsSimulation boidsSimulation;
+      
+      Particle[] readParticles;
 
       private void Start()
       {
@@ -61,6 +63,8 @@ namespace SimulationEngine
          gravitySimulation.SetUp();
          particleLifeSimulation.SetUp();
          boidsSimulation.SetUp();
+         
+         readParticles = new Particle[particleCount];
       }
 
       private void Update() {
@@ -74,6 +78,7 @@ namespace SimulationEngine
                break;
             case ParticleBehavior.Boids:
                boidsSimulation.Step(Time.deltaTime);
+               buffers.Read.GetData(readParticles);
                break;
          }
          
@@ -106,7 +111,7 @@ namespace SimulationEngine
             particles[i].position = Random.insideUnitSphere * simulationSize;
             particles[i].velocity = Random.insideUnitSphere * initialSpeed;
             //particles[i].direction = Vector3.Normalize(Random.insideUnitSphere * 100);
-            particles[i].direction = new Vector3(1, 0, 0);
+            particles[i].direction = new Vector3(0, 0, 0);
             particles[i].mass = Random.Range(0.2f, 1f);
             particles[i].type = Random.Range(0, particleLifeSettings.types);
          }
@@ -120,6 +125,15 @@ namespace SimulationEngine
             renderer.Release();
             buffers.Release();
             particleLifeSimulation.Release();
+         }
+      }
+
+      void OnDrawGizmos()
+      {
+         if (readParticles != null)
+         {
+            Gizmos.DrawLine(readParticles[5].position, (readParticles[5].direction) + readParticles[5].position);
+
          }
       }
    }
