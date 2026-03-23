@@ -27,7 +27,7 @@ namespace SimulationEngine
       [SerializeField] private int particleCount = 100;
       [SerializeField] private float radius = 1.0f;
       [SerializeField] private float simulationSize = 10;
-      [SerializeField] private uint initialSpeed;
+      [SerializeField] private float initialSpeed;
       [SerializeField] private ParticleBehavior particleBehavior;
       
       [Header("Gravity settings")]

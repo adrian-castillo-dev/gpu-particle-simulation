@@ -27,9 +27,7 @@ float forceFactor;
 //Boids variables
 float boidsRange;
 float boidsSpeed;
-float boidsTime;
 float boidsWeight;
-float averageDirectionWeight;
 
 float CalculateForce(float distance, float attraction) {
     float beta = 0.3f;
@@ -108,37 +106,46 @@ void ComputeParticleLifeForces (uint3 id : SV_DispatchThreadID)
     if (i >= nParticles) return;
     Particle particle = particleReadBuffer[i];
     
-    float3 targetDirection = float3(0, 0, 0);
-    float3 averageFlockDirection = float3(0, 0, 0);
+    float3 averageVelocity = 0;
+    float neighboringBoids = 0;
     
-    // Check Every other Particle
     for (int j = 0; j < nParticles; j++)
     {
-        if (j == i) continue; // skip itself
+        if (j == i) continue;
         Particle otherParticle = particleReadBuffer[j];
-
-        float3 directionToOther = otherParticle.position - particle.position;
-        float distance = length(directionToOther);
         
-        // Too close
+        float3 direction = otherParticle.position - particle.position;
+        float distance = sqrt(dot(direction, direction));
+        distance += 0.001;
+                
         if (distance < boidsRange / 2)
         {
-            targetDirection -= directionToOther * 50;
+            averageVelocity += otherParticle.velocity;
+            neighboringBoids += 1;
         }
-        // In range
-        else if (distance > boidsRange / 2 && distance < boidsRange * 2)
-        {
-            targetDirection += directionToOther + otherParticle.direction;
-        }
-
-    } 
+    }
     
-    particle.direction += targetDirection * (boidsWeight / 2000);
-    particle.direction = normalize(particle.direction); // Normalize direction
-    particle.velocity = particle.direction * boidsSpeed;
+    if (neighboringBoids > 0)
+    {
+        averageVelocity = averageVelocity / neighboringBoids;
+    }
+    
+    float speed = length(particle.velocity);
+    
+    if (speed > 6)
+    {
+        particle.velocity = (particle.velocity / speed)*6;
+    }
+    if (speed < 3)
+    {
+        particle.velocity = (particle.velocity / speed)*3;
+    }
+   
+    particle.velocity += (averageVelocity - particle.velocity) * boidsWeight;
     particle.position += particle.velocity * deltaTime;
     // Write back to the buffer 
     particleWriteBuffer[i] = particle; 
 }
+
 
 
