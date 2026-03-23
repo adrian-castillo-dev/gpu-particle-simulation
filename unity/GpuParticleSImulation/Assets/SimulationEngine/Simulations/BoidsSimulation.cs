@@ -22,6 +22,8 @@ namespace SimulationEngine.Simulations
             shader.SetFloat("boidsSpeed", settings.speed);
             shader.SetFloat("boidsTime", time);
             shader.SetFloat("boidsWeight", settings.weight);
+            shader.SetFloat("averageDirectionWeight", settings.averageDirectionWeight);
+
 
 
         }
@@ -34,6 +36,7 @@ namespace SimulationEngine.Simulations
             shader.SetFloat("boidsRange", settings.range);
             shader.SetFloat("boidsSpeed", settings.speed);
             shader.SetFloat("boidsWeight", settings.weight);
+            shader.SetFloat("averageDirectionWeight", settings.averageDirectionWeight);
 
             shader.SetFloat("boidsTime", time += 1 * dt);
             

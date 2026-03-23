@@ -9,5 +9,6 @@ namespace SimulationEngine.Settings
         public float speed = 5;
         public float range = 8;
         public float weight = 1;
+        public float averageDirectionWeight = 1;
     }
 }

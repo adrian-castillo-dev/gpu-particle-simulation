@@ -557,12 +557,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a4a5b55200333e4b98db7b83fd72eb6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParticleLifeManager
-  mesh: {fileID: -2432090755550338912, guid: f7ee32019d33cf7428d563d36ca5d2fb, type: 3}
+  mesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
   material: {fileID: 2100000, guid: 0da56d6c9d2dd154d91766ad852ac702, type: 2}
   computeShader: {fileID: 7200000, guid: a162ef64cd6c71f409dd219c814c7e2f, type: 3}
-  particleCount: 10
-  radius: 0.87
-  simulationSize: 16.44
+  particleCount: 1000
+  radius: 0.75
+  simulationSize: 50
   initialSpeed: 0
   particleBehavior: 2
   gravitySettings: {fileID: 11400000, guid: 330b65ab920c3124ebd26ede8ef37ff5, type: 2}

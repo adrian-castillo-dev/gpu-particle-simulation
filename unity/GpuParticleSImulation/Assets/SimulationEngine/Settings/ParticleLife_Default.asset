@@ -15,4 +15,4 @@ MonoBehaviour:
   types: 9
   frictionHalfLife: 0.008
   rMax: 35
-  forceFactor: 2.5
+  forceFactor: 2

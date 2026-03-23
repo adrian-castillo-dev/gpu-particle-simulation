@@ -29,6 +29,7 @@ float boidsRange;
 float boidsSpeed;
 float boidsTime;
 float boidsWeight;
+float averageDirectionWeight;
 
 float CalculateForce(float distance, float attraction) {
     float beta = 0.3f;
@@ -102,20 +103,38 @@ void ComputeParticleLifeForces (uint3 id : SV_DispatchThreadID)
 }
 
 [numthreads(128, 1, 1)] void ComputeBoids (uint3 id : SV_DispatchThreadID) { 
+    // Get current particle and index (i) based on id
     int i = id.x;
     if (i >= nParticles) return;
     Particle particle = particleReadBuffer[i];
-    float t = boidsTime * (boidsSpeed / 2) + i;
+    
     float3 targetDirection = float3(0, 0, 0);
+    float3 averageFlockDirection = float3(0, 0, 0);
+    
+    // Check Every other Particle
     for (int j = 0; j < nParticles; j++)
     {
-        if (j == i) continue;
+        if (j == i) continue; // skip itself
         Particle otherParticle = particleReadBuffer[j];
+
         float3 directionToOther = otherParticle.position - particle.position;
-        targetDirection += directionToOther;
+        float distance = length(directionToOther);
         
+        // Too close
+        if (distance < boidsRange / 2)
+        {
+            targetDirection -= directionToOther * 50;
+        }
+        // In range
+        else if (distance > boidsRange / 2 && distance < boidsRange * 2)
+        {
+            targetDirection += directionToOther + otherParticle.direction;
+        }
+
     } 
-    particle.direction += normalize(targetDirection);
+    
+    particle.direction += targetDirection * (boidsWeight / 2000);
+    particle.direction = normalize(particle.direction); // Normalize direction
     particle.velocity = particle.direction * boidsSpeed;
     particle.position += particle.velocity * deltaTime;
     // Write back to the buffer 

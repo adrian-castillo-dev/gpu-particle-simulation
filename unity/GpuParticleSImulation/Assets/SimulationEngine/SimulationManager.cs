@@ -5,7 +5,9 @@ using SimulationEngine.Rendering;
 using SimulationEngine.Core;
 using SimulationEngine.Settings;
 using SimulationEngine.Simulations;
+using Unity.Mathematics;
 using Unity.VisualScripting;
+using UnityEngine.UIElements;
 
 namespace SimulationEngine
 {
@@ -132,8 +134,22 @@ namespace SimulationEngine
       {
          if (readParticles != null)
          {
-            Gizmos.DrawLine(readParticles[5].position, (readParticles[5].direction) + readParticles[5].position);
-
+            Gizmos.color = Color.white;
+            Gizmos.DrawLine(readParticles[5].position, (readParticles[5].direction * 5) + readParticles[5].position);
+            for (int i = 0; i < buffers.ParticleCount; i++)
+            {
+               if (i == 5) continue;
+               if (math.length(readParticles[i].position - readParticles[5].position) <= boidsSettings.range / 2)
+               {
+                  Gizmos.color = Color.red;
+                  Gizmos.DrawLine(readParticles[5].position, readParticles[i].position);
+               }
+               else if (math.length(readParticles[i].position - readParticles[5].position) <= boidsSettings.range)
+               {
+                  Gizmos.color = Color.green;
+                  Gizmos.DrawLine(readParticles[5].position, readParticles[i].position);
+               }
+            }
          }
       }
    }
