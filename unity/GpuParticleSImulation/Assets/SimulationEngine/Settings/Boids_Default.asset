@@ -13,6 +13,8 @@ MonoBehaviour:
   m_Name: Boids_Default
   m_EditorClassIdentifier: Assembly-CSharp::SimulationEngine.Settings.BoidsSettings
   speed: 2
-  range: 5.32
-  weight: 0.02
-  averageDirectionWeight: 1
+  visualRange: 40
+  protectedRange: 8
+  alignmentFactor: 0.125
+  cohesionFactor: 0.01
+  separationFactor: 0.2

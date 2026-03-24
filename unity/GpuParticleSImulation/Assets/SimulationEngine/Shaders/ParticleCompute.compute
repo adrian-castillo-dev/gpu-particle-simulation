@@ -25,9 +25,12 @@ float forceFactor;
 
 
 //Boids variables
-float boidsRange;
+float boidsVisualRange;
+float boidsProtectedRange;
 float boidsSpeed;
-float boidsWeight;
+float alignmentFactor;
+float cohesionFactor;
+float separationFactor;
 
 float CalculateForce(float distance, float attraction) {
     float beta = 0.3f;
@@ -77,7 +80,7 @@ void ComputeParticleLifeForces (uint3 id : SV_DispatchThreadID)
     Particle particle = particleReadBuffer[i];
     for (int j = 0; j < nParticles; j++)
     {
-        if (i == j) continue;
+        if (i == j) continue; // Skip itself
         Particle otherParticle = particleReadBuffer[j];
 
         float3 direction = otherParticle.position - particle.position;
@@ -100,49 +103,97 @@ void ComputeParticleLifeForces (uint3 id : SV_DispatchThreadID)
     particleWriteBuffer[i] = particle;
 }
 
+
 [numthreads(128, 1, 1)] void ComputeBoids (uint3 id : SV_DispatchThreadID) { 
     // Get current particle and index (i) based on id
     int i = id.x;
     if (i >= nParticles) return;
     Particle particle = particleReadBuffer[i];
     
+    // Data
     float3 averageVelocity = 0;
+    float3 close = 0;
+    float3 averagePosition = 0;
     float neighboringBoids = 0;
     
     for (int j = 0; j < nParticles; j++)
     {
-        if (j == i) continue;
+        if (j == i) continue; // Skip itself
+        
         Particle otherParticle = particleReadBuffer[j];
         
         float3 direction = otherParticle.position - particle.position;
         float distance = sqrt(dot(direction, direction));
         distance += 0.001;
                 
-        if (distance < boidsRange / 2)
+        float3 forward = normalize(particle.velocity);
+        float3 dir = normalize(direction);
+
+        float visionDot = dot(forward, dir);
+
+        if (distance < boidsVisualRange && visionDot > 0.5)
         {
             averageVelocity += otherParticle.velocity;
+            averagePosition += otherParticle.position;
             neighboringBoids += 1;
+        }
+        if (distance < boidsProtectedRange)
+        {
+            float3 diff = particle.position - otherParticle.position;
+            close += diff / (distance * distance);
         }
     }
     
     if (neighboringBoids > 0)
     {
-        averageVelocity = averageVelocity / neighboringBoids;
+        averageVelocity /= neighboringBoids;
+        averagePosition /= neighboringBoids;
     }
     
-    float speed = length(particle.velocity);
+    // Compute forces
+    float3 separation = close;
+    float3 alignment = averageVelocity - particle.velocity;
+    float3 cohesion = averagePosition - particle.position;
     
-    if (speed > 6)
-    {
+    // Combine forces
+    float3 acceleration = 0;
+    acceleration += cohesion * cohesionFactor;
+    acceleration += separation * separationFactor;
+    acceleration += alignment * alignmentFactor;
+    
+    // Apply movement
+    particle.velocity += acceleration * deltaTime;
+    
+    // Clamp speed
+    float speed = length(particle.velocity);
+    if (speed > 6){
         particle.velocity = (particle.velocity / speed)*6;
     }
-    if (speed < 3)
-    {
+    if (speed < 3){
         particle.velocity = (particle.velocity / speed)*3;
     }
    
-    particle.velocity += (averageVelocity - particle.velocity) * boidsWeight;
+    
+    float margin = 10;
+    float turnFactor = 0.005;
+
+    if (particle.position.x < -70 + margin)
+        particle.velocity.x += turnFactor;
+    if (particle.position.x > 70 - margin)
+        particle.velocity.x -= turnFactor;
+
+    if (particle.position.y < -70 + margin)
+        particle.velocity.y += turnFactor;
+    if (particle.position.y > 70 - margin)
+        particle.velocity.y -= turnFactor;
+    
+    if (particle.position.z < -70 + margin)
+        particle.velocity.z += turnFactor;
+    if (particle.position.z > 70 - margin)
+        particle.velocity.z -= turnFactor;
+    // Move the particle
     particle.position += particle.velocity * deltaTime;
+    
     // Write back to the buffer 
     particleWriteBuffer[i] = particle; 
 }

@@ -18,9 +18,13 @@ namespace SimulationEngine.Simulations
             shader.SetBuffer(kernel, "particleReadBuffer", buffers.Read);
             shader.SetBuffer(kernel, "particleWriteBuffer", buffers.Write);
             
-            shader.SetFloat("boidsRange", settings.range);
+            shader.SetFloat("boidsVisualRange", settings.visualRange);
+            shader.SetFloat("boidsProtectedRange", settings.protectedRange);
+
             shader.SetFloat("boidsSpeed", settings.speed);
-            shader.SetFloat("boidsWeight", settings.weight);
+            shader.SetFloat("alignmentWeight", settings.alignmentFactor);
+            shader.SetFloat("cohesionFactor", settings.cohesionFactor);
+            shader.SetFloat("separationFactor", settings.separationFactor);
 
 
 
@@ -32,9 +36,12 @@ namespace SimulationEngine.Simulations
             
             shader.SetFloat("deltaTime", dt);
             
-            shader.SetFloat("boidsRange", settings.range);
+            shader.SetFloat("boidsVisualRange", settings.visualRange);
+            shader.SetFloat("boidsProtectedRange", settings.protectedRange);
             shader.SetFloat("boidsSpeed", settings.speed);
-            shader.SetFloat("boidsWeight", settings.weight);
+            shader.SetFloat("alignmentWeight", settings.alignmentFactor);
+            shader.SetFloat("cohesionFactor", settings.cohesionFactor);
+            shader.SetFloat("separationFactor", settings.separationFactor);
 
             
             shader.SetBuffer(kernel, "particleReadBuffer", buffers.Read);

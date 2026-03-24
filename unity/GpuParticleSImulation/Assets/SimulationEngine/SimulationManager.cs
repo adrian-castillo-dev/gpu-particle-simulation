@@ -139,12 +139,12 @@ namespace SimulationEngine
             for (int i = 0; i < buffers.ParticleCount; i++)
             {
                if (i == 5) continue;
-               if (math.length(readParticles[i].position - readParticles[5].position) <= boidsSettings.range / 2)
+               if (math.length(readParticles[i].position - readParticles[5].position) <= boidsSettings.visualRange / 2)
                {
                   Gizmos.color = Color.red;
                   Gizmos.DrawLine(readParticles[5].position, readParticles[i].position);
                }
-               else if (math.length(readParticles[i].position - readParticles[5].position) <= boidsSettings.range)
+               else if (math.length(readParticles[i].position - readParticles[5].position) <= boidsSettings.protectedRange)
                {
                   Gizmos.color = Color.green;
                   Gizmos.DrawLine(readParticles[5].position, readParticles[i].position);
