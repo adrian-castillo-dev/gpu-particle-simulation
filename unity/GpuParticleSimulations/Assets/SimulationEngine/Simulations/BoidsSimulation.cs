@@ -27,6 +27,7 @@ namespace SimulationEngine.Simulations
             shader.SetFloat("boidsCenteringFactor", settings.centeringFactor);
             shader.SetFloat("boidsAvoidFactor", settings.avoidFactor);
             shader.SetFloat("boidsTurnFactor", settings.turnFactor);
+            shader.SetFloat("boidsEnemies", settings.boidsEnemies);
 
         }
 
@@ -45,6 +46,7 @@ namespace SimulationEngine.Simulations
             shader.SetFloat("boidsCenteringFactor", settings.centeringFactor);
             shader.SetFloat("boidsAvoidFactor", settings.avoidFactor);
             shader.SetFloat("boidsTurnFactor", settings.turnFactor);
+            shader.SetFloat("boidsEnemies", settings.boidsEnemies);
             
             shader.SetBuffer(kernel, "particleReadBuffer", buffers.Read);
             shader.SetBuffer(kernel, "particleWriteBuffer", buffers.Write);

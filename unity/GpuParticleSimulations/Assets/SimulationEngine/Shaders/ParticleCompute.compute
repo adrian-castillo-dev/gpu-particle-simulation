@@ -33,6 +33,7 @@ float boidsMatchingFactor;
 float boidsCenteringFactor;
 float boidsAvoidFactor;
 float boidsTurnFactor;
+float boidsEnemies;
 
 float CalculateForce(float distance, float attraction) {
     float beta = 0.3f;
@@ -144,12 +145,11 @@ void ComputeParticleLifeForces (uint3 id : SV_DispatchThreadID)
             averagePosition += otherBoid.position;
             neighboringBoids += 1;
         }
-        if (j < 8)
+        if (j < boidsEnemies)
         {
-            if (distance < 60)
+            if (distance < 25)
             {
-                averageVelocity -= otherBoid.velocity * 100;
-                averagePosition -= otherBoid.position * 100;
+                averageVelocity -= otherBoid.velocity * 10;
             }
         }
     }
@@ -164,7 +164,7 @@ void ComputeParticleLifeForces (uint3 id : SV_DispatchThreadID)
     boid.velocity += (averageVelocity - boid.velocity) * boidsMatchingFactor;
     boid.velocity += (averagePosition - boid.position) * boidsCenteringFactor;
     
-    float simulationSize = 100;
+    float simulationSize =120;
     float margin = simulationSize;
 
     if (boid.position.x < -margin) {
@@ -198,8 +198,12 @@ void ComputeParticleLifeForces (uint3 id : SV_DispatchThreadID)
         if (speed < boidsMinSpeed)
             boid.velocity = (boid.velocity / speed) * boidsMinSpeed;
     }
+    
+    if (i > boidsEnemies)
+    {
+        boid.position += boid.velocity * deltaTime;
+    }
 
-    boid.position += boid.velocity * deltaTime;
     // Write back to the buffer
     particleWriteBuffer[i] = boid; 
 }

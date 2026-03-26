@@ -12,11 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d17aa0799bda9bd4998cff0d4efe286f, type: 3}
   m_Name: Boids_Default
   m_EditorClassIdentifier: Assembly-CSharp::SimulationEngine.Settings.BoidsSettings
-  minSpeed: 20
-  maxSpeed: 26
-  visualRange: 40
-  protectedRange: 10
-  matchingFactor: 0.007
-  centeringFactor: 0.005
-  avoidFactor: 0.2
-  turnFactor: 0.1
+  minSpeed: 6
+  maxSpeed: 12
+  visualRange: 10
+  protectedRange: 5
+  matchingFactor: 0.002
+  centeringFactor: 0.004
+  avoidFactor: 0.1
+  turnFactor: 0.05
+  boidsEnemies: 120

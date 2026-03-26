@@ -14,5 +14,6 @@ namespace SimulationEngine.Settings
         public float centeringFactor = 1;
         public float avoidFactor = 1;
         public float turnFactor = 0.1f;
+        public float boidsEnemies = 10;
     }
 }
