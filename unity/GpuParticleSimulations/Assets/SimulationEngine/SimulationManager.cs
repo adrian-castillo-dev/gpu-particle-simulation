@@ -5,6 +5,9 @@ using SimulationEngine.Rendering;
 using SimulationEngine.Core;
 using SimulationEngine.Settings;
 using SimulationEngine.Simulations;
+using Unity.Mathematics;
+using Unity.VisualScripting;
+using UnityEngine.UIElements;
 
 namespace SimulationEngine
 {
@@ -13,7 +16,8 @@ namespace SimulationEngine
       private enum ParticleBehavior
       {
          Gravity,
-         ParticleLife
+         ParticleLife,
+         Boids
       }
      
       [Header("Simulation")]
@@ -23,7 +27,7 @@ namespace SimulationEngine
       [SerializeField] private int particleCount = 100;
       [SerializeField] private float radius = 1.0f;
       [SerializeField] private float simulationSize = 10;
-      [SerializeField] private uint initialSpeed;
+      [SerializeField] private float initialSpeed;
       [SerializeField] private ParticleBehavior particleBehavior;
       
       [Header("Gravity settings")]
@@ -32,12 +36,18 @@ namespace SimulationEngine
       [Header("Particle Life settings")] 
       [SerializeField] private ParticleLifeSettings particleLifeSettings;
       
+      [Header("Boids Settings")]
+      [SerializeField] private BoidsSettings boidsSettings;
+      
       private ParticleRenderer renderer;
       private ParticleBufferManager buffers;
 
       // Simulations
       private GravitySimulation gravitySimulation;
       private ParticleLifeSimulation particleLifeSimulation;
+      private BoidsSimulation boidsSimulation;
+      
+      Particle[] readParticles;
 
       private void Start()
       {
@@ -50,9 +60,13 @@ namespace SimulationEngine
          // Create Simulations
          gravitySimulation = new GravitySimulation(computeShader, buffers, gravitySettings);
          particleLifeSimulation = new ParticleLifeSimulation(computeShader, buffers, particleLifeSettings);
+         boidsSimulation = new BoidsSimulation(computeShader, buffers, boidsSettings);
          // Start Simulations
          gravitySimulation.SetUp();
          particleLifeSimulation.SetUp();
+         boidsSimulation.SetUp();
+         
+         readParticles = new Particle[particleCount];
       }
 
       private void Update() {
@@ -63,6 +77,10 @@ namespace SimulationEngine
                break;
             case ParticleBehavior.ParticleLife:
                particleLifeSimulation.Step(Time.deltaTime);
+               break;
+            case ParticleBehavior.Boids:
+               boidsSimulation.Step(Time.deltaTime);
+               buffers.Read.GetData(readParticles);
                break;
          }
          
@@ -94,6 +112,8 @@ namespace SimulationEngine
          for (int i = 0; i < particleCount; i++) {
             particles[i].position = Random.insideUnitSphere * simulationSize;
             particles[i].velocity = Random.insideUnitSphere * initialSpeed;
+            //particles[i].direction = Vector3.Normalize(Random.insideUnitSphere * 100);
+            particles[i].direction = new Vector3(0, 0, 0);
             particles[i].mass = Random.Range(0.2f, 1f);
             particles[i].type = Random.Range(0, particleLifeSettings.types);
          }
@@ -107,6 +127,29 @@ namespace SimulationEngine
             renderer.Release();
             buffers.Release();
             particleLifeSimulation.Release();
+         }
+      }
+
+      void OnDrawGizmos()
+      {
+         if (readParticles != null)
+         {
+            Gizmos.color = Color.white;
+            Gizmos.DrawLine(readParticles[5].position, (readParticles[5].direction * 5) + readParticles[5].position);
+            for (int i = 0; i < buffers.ParticleCount; i++)
+            {
+               if (i == 5) continue;
+               if (math.length(readParticles[i].position - readParticles[5].position) <= 60)
+               {
+                  Gizmos.color = Color.red;
+                  Gizmos.DrawLine(readParticles[5].position, readParticles[i].position);
+               }
+               // else if (math.length(readParticles[i].position - readParticles[5].position) <= boidsSettings.visualRange)
+               // {
+               //    Gizmos.color = Color.green;
+               //    Gizmos.DrawLine(readParticles[5].position, readParticles[i].position);
+               // }
+            }
          }
       }
    }

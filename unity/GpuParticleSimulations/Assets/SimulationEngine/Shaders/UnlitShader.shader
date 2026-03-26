@@ -19,6 +19,7 @@ Shader "Custom/UnlitShader"
                 float3 velocity;
                 float mass;
                 int type;
+                float3 direction;
             };
 
             StructuredBuffer<Particle> particleBuffer;
@@ -47,8 +48,29 @@ Shader "Custom/UnlitShader"
                 v2f o;
 
                 Particle particle = particleBuffer[v.instanceID];
-                float3 worldPos = v.vertex.xyz * _Radius + particle.position;
 
+                // Build rotation basis
+                float3 forward = normalize(particle.velocity);
+
+                float3 up = float3(0, 1, 0);
+                if (abs(forward.y) > 0.99)
+                    up = float3(1, 0, 0);
+
+                float3 right = normalize(cross(up, forward));
+                up = cross(forward, right);
+
+                // Rotate vertex
+                float3 local = v.vertex.xyz * _Radius;
+
+                float3 rotated =
+                    right   * local.x +
+                    up      * local.y +
+                    forward * local.z;
+
+                // Final position
+                float3 worldPos = rotated + particle.position;
+
+                
                 float hue = (float)particle.type / (float)nTypes;
                 float3 rgb = HSVtoRGB(float3(hue, 1.0, 1.0));
 

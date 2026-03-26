@@ -1,0 +1,208 @@
+#pragma kernel ComputeGravity
+#pragma kernel ComputeParticleLifeForces
+#pragma kernel ComputeBoids
+
+struct Particle
+{
+    float3 position;
+    float3 velocity;
+    float mass;
+    int type;
+    float3 direction;
+};
+
+RWStructuredBuffer<Particle> particleWriteBuffer;
+StructuredBuffer<Particle> particleReadBuffer;
+StructuredBuffer<float> attractionMatrix;
+int nParticles;
+float softening;
+float deltaTime;
+int nTypes;
+float G;
+float rMax;
+float frictionFactor;
+float forceFactor;
+
+
+//Boids variables
+float boidsMinSpeed;
+float boidsMaxSpeed;
+float boidsVisualRange;
+float boidsProtectedRange;
+float boidsMatchingFactor;
+float boidsCenteringFactor;
+float boidsAvoidFactor;
+float boidsTurnFactor;
+
+float CalculateForce(float distance, float attraction) {
+    float beta = 0.3f;
+    if (distance < beta) {
+        return distance / beta - 1;
+    } else if (distance > beta && distance < 1) {
+        return attraction * (1 - abs(2 * distance - 1 - beta) / (1 - beta));
+    } else {
+        return 0;
+    }
+}
+
+[numthreads(128,1,1)]
+void ComputeGravity (uint3 id : SV_DispatchThreadID)
+{
+    int i = id.x;
+    if (i >= nParticles) return;
+    
+    Particle particle = particleReadBuffer[i];
+
+    for (int j = 0; j < nParticles; j++)
+    {
+        if (i == j) continue;
+        Particle otherParticle = particleReadBuffer[j];
+        float3 direction = otherParticle.position - particle.position;
+        float distanceSquared = dot(direction, direction);
+        distanceSquared += softening * softening;
+        float distance = sqrt(distanceSquared);
+        float forceMagnitude = G * (1 * 1) / distanceSquared; // assuming both masses are 1 and G is also 1
+        direction /= distance;
+        particle.velocity += direction * forceMagnitude * deltaTime;
+    }
+
+    particle.position += particle.velocity * deltaTime;
+    particleWriteBuffer[i] = particle;
+}
+
+
+[numthreads(128,1,1)]
+void ComputeParticleLifeForces (uint3 id : SV_DispatchThreadID)
+{
+    int i = id.x;
+    if (i >= nParticles) return;
+
+    float3 totalForce = 0;
+
+    Particle particle = particleReadBuffer[i];
+    for (int j = 0; j < nParticles; j++)
+    {
+        if (i == j) continue; // Skip itself
+        Particle otherParticle = particleReadBuffer[j];
+
+        float3 direction = otherParticle.position - particle.position;
+        float distanceSquared = dot(direction, direction);
+        float distance = sqrt(distanceSquared);
+
+        if (distance > 0 && distance < rMax)
+        {
+            int index = particle.type * nTypes + otherParticle.type;
+            float force = CalculateForce(distance / rMax, attractionMatrix[index]);
+            totalForce += (direction / (distance + 0.001f) * force) * forceFactor;
+        }
+    }
+
+    totalForce *= rMax;
+    particle.velocity *= frictionFactor;
+    particle.velocity += totalForce * deltaTime;
+    particle.position += particle.velocity * deltaTime;
+
+    particleWriteBuffer[i] = particle;
+}
+
+
+[numthreads(128, 1, 1)] void ComputeBoids (uint3 id : SV_DispatchThreadID) {
+    // Get current particle and index (i) based on id
+    int i = id.x;
+    if (i >= nParticles) return;
+    Particle boid = particleReadBuffer[i];
+    
+    float3 close = 0;
+    float3 averageVelocity = 0;
+    float3 averagePosition = 0;
+    float neighboringBoids = 0;
+    
+    for (int j = 0; j < nParticles; j++)
+    {
+        if (i == j) continue; // Skip itself
+        
+        Particle otherBoid = particleReadBuffer[j];
+        
+        float3 direction = otherBoid.position - boid.position;
+        float distance = sqrt(dot(direction, direction));
+        
+        if (distance < boidsProtectedRange)
+        {
+            float distSq = dot(direction, direction);
+
+            if (distSq < boidsProtectedRange * boidsProtectedRange && distSq > 0)
+            {
+                close += (boid.position - otherBoid.position) / distSq;
+            }
+        }
+        
+        
+        if (distance < boidsVisualRange)
+        {
+            
+            averageVelocity += otherBoid.velocity;
+            averagePosition += otherBoid.position;
+            neighboringBoids += 1;
+        }
+        if (j < 8)
+        {
+            if (distance < 60)
+            {
+                averageVelocity -= otherBoid.velocity * 100;
+                averagePosition -= otherBoid.position * 100;
+            }
+        }
+    }
+    
+    if (neighboringBoids > 0)
+    {
+        averageVelocity /= neighboringBoids;
+        averagePosition /= neighboringBoids;
+    }
+    
+    boid.velocity += close * boidsAvoidFactor;
+    boid.velocity += (averageVelocity - boid.velocity) * boidsMatchingFactor;
+    boid.velocity += (averagePosition - boid.position) * boidsCenteringFactor;
+    
+    float simulationSize = 100;
+    float margin = simulationSize;
+
+    if (boid.position.x < -margin) {
+        boid.velocity.x += boidsTurnFactor;
+    }
+    if (boid.position.x > margin) {
+        boid.velocity.x -= boidsTurnFactor;
+    }
+                
+    if (boid.position.y < -margin) {
+        boid.velocity.y += boidsTurnFactor;
+    }
+    if (boid.position.y > margin) {
+        boid.velocity.y -= boidsTurnFactor;
+    }
+                
+    if (boid.position.z < -margin) {
+        boid.velocity.z += boidsTurnFactor;
+    }
+    if (boid.position.z > margin) {
+        boid.velocity.z -= boidsTurnFactor;
+    }
+    
+    float speed = sqrt(dot(boid.velocity, boid.velocity));
+    
+    if (speed > 0)
+    {
+        if (speed > boidsMaxSpeed)
+            boid.velocity = (boid.velocity / speed) * boidsMaxSpeed;
+
+        if (speed < boidsMinSpeed)
+            boid.velocity = (boid.velocity / speed) * boidsMinSpeed;
+    }
+
+    boid.position += boid.velocity * deltaTime;
+    // Write back to the buffer
+    particleWriteBuffer[i] = boid; 
+}
+
+
+
