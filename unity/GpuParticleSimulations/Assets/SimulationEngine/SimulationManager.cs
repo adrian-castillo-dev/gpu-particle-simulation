@@ -65,8 +65,6 @@ namespace SimulationEngine
          gravitySimulation.SetUp();
          particleLifeSimulation.SetUp();
          boidsSimulation.SetUp();
-         
-         readParticles = new Particle[particleCount];
       }
 
       private void Update() {
@@ -80,7 +78,6 @@ namespace SimulationEngine
                break;
             case ParticleBehavior.Boids:
                boidsSimulation.Step(Time.deltaTime);
-               buffers.Read.GetData(readParticles);
                break;
          }
          
@@ -130,28 +127,7 @@ namespace SimulationEngine
          }
       }
 
-      void OnDrawGizmos()
-      {
-         if (readParticles != null)
-         {
-            Gizmos.color = Color.white;
-            Gizmos.DrawLine(readParticles[5].position, (readParticles[5].direction * 5) + readParticles[5].position);
-            for (int i = 0; i < buffers.ParticleCount; i++)
-            {
-               if (i == 5) continue;
-               if (math.length(readParticles[i].position - readParticles[5].position) <= 60)
-               {
-                  Gizmos.color = Color.red;
-                  Gizmos.DrawLine(readParticles[5].position, readParticles[i].position);
-               }
-               // else if (math.length(readParticles[i].position - readParticles[5].position) <= boidsSettings.visualRange)
-               // {
-               //    Gizmos.color = Color.green;
-               //    Gizmos.DrawLine(readParticles[5].position, readParticles[i].position);
-               // }
-            }
-         }
-      }
+      
    }
 }
 
