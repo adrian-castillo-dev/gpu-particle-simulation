@@ -25,12 +25,14 @@ float forceFactor;
 
 
 //Boids variables
+float boidsMinSpeed;
+float boidsMaxSpeed;
 float boidsVisualRange;
 float boidsProtectedRange;
-float boidsSpeed;
-float alignmentFactor;
-float cohesionFactor;
-float separationFactor;
+float boidsMatchingFactor;
+float boidsCenteringFactor;
+float boidsAvoidFactor;
+float boidsTurnFactor;
 
 float CalculateForce(float distance, float attraction) {
     float beta = 0.3f;
@@ -108,59 +110,99 @@ void ComputeParticleLifeForces (uint3 id : SV_DispatchThreadID)
     // Get current particle and index (i) based on id
     int i = id.x;
     if (i >= nParticles) return;
-    Particle particle = particleReadBuffer[i];
-    // Data
-    float3 averageVelocity = 0;
+    Particle boid = particleReadBuffer[i];
+    
     float3 close = 0;
+    float3 averageVelocity = 0;
     float3 averagePosition = 0;
     float neighboringBoids = 0;
-    for (int j = 0; j < nParticles; j++) {
-        if (j == i) continue; // Skip itself
+    
+    for (int j = 0; j < nParticles; j++)
+    {
+        if (i == j) continue; // Skip itself
         
-        Particle otherParticle = particleReadBuffer[j];
-        float3 direction = otherParticle.position - particle.position;
+        Particle otherBoid = particleReadBuffer[j];
+        
+        float3 direction = otherBoid.position - boid.position;
         float distance = sqrt(dot(direction, direction));
-        distance += 0.001;
-        if (distance < boidsVisualRange) {
-            averageVelocity += otherParticle.velocity;
-            averagePosition += otherParticle.position;
-            neighboringBoids += 1;
-        } 
+        
         if (distance < boidsProtectedRange)
         {
-            close += particle.position - otherParticle.position;
-        } 
-    } 
+            float distSq = dot(direction, direction);
+
+            if (distSq < boidsProtectedRange * boidsProtectedRange && distSq > 0)
+            {
+                close += (boid.position - otherBoid.position) / distSq;
+            }
+        }
+        
+        
+        if (distance < boidsVisualRange)
+        {
+            
+            averageVelocity += otherBoid.velocity;
+            averagePosition += otherBoid.position;
+            neighboringBoids += 1;
+        }
+        if (j < 8)
+        {
+            if (distance < 60)
+            {
+                averageVelocity -= otherBoid.velocity * 100;
+                averagePosition -= otherBoid.position * 100;
+            }
+        }
+    }
+    
     if (neighboringBoids > 0)
     {
         averageVelocity /= neighboringBoids;
         averagePosition /= neighboringBoids;
-    } 
-    // Compute forces
-    float3 separation = close;
-    float3 alignment = averageVelocity - particle.velocity;
-    float3 cohesion = averagePosition - particle.position;
-    // Combine forces
-    float3 acceleration = 0;
-    acceleration += cohesion * cohesionFactor;
-    acceleration += separation * separationFactor;
-    acceleration += alignment * alignmentFactor;
-    // Apply movement 
-    particle.velocity += acceleration * deltaTime;
-    // Clamp speed 
-    float speed = length(particle.velocity);
-    if (speed > 6)
+    }
+    
+    boid.velocity += close * boidsAvoidFactor;
+    boid.velocity += (averageVelocity - boid.velocity) * boidsMatchingFactor;
+    boid.velocity += (averagePosition - boid.position) * boidsCenteringFactor;
+    
+    float simulationSize = 100;
+    float margin = simulationSize;
+
+    if (boid.position.x < -margin) {
+        boid.velocity.x += boidsTurnFactor;
+    }
+    if (boid.position.x > margin) {
+        boid.velocity.x -= boidsTurnFactor;
+    }
+                
+    if (boid.position.y < -margin) {
+        boid.velocity.y += boidsTurnFactor;
+    }
+    if (boid.position.y > margin) {
+        boid.velocity.y -= boidsTurnFactor;
+    }
+                
+    if (boid.position.z < -margin) {
+        boid.velocity.z += boidsTurnFactor;
+    }
+    if (boid.position.z > margin) {
+        boid.velocity.z -= boidsTurnFactor;
+    }
+    
+    float speed = sqrt(dot(boid.velocity, boid.velocity));
+    
+    if (speed > 0)
     {
-        particle.velocity = (particle.velocity / speed)*6;
-    } 
-    if (speed < 3)
-    {
-        particle.velocity = (particle.velocity / speed)*3;
-    } 
-    // Move the particle
-    particle.position += particle.velocity * deltaTime;
+        if (speed > boidsMaxSpeed)
+            boid.velocity = (boid.velocity / speed) * boidsMaxSpeed;
+
+        if (speed < boidsMinSpeed)
+            boid.velocity = (boid.velocity / speed) * boidsMinSpeed;
+    }
+
+    boid.position += boid.velocity * deltaTime;
     // Write back to the buffer
-    particleWriteBuffer[i] = particle; }
+    particleWriteBuffer[i] = boid; 
+}
 
 
 

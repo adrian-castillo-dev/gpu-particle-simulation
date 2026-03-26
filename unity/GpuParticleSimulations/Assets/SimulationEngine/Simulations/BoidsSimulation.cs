@@ -18,15 +18,15 @@ namespace SimulationEngine.Simulations
             shader.SetBuffer(kernel, "particleReadBuffer", buffers.Read);
             shader.SetBuffer(kernel, "particleWriteBuffer", buffers.Write);
             
+            // Boids settings
+            shader.SetFloat("boidsMinSpeed", settings.minSpeed);
+            shader.SetFloat("boidsMaxSpeed", settings.maxSpeed);
             shader.SetFloat("boidsVisualRange", settings.visualRange);
             shader.SetFloat("boidsProtectedRange", settings.protectedRange);
-
-            shader.SetFloat("boidsSpeed", settings.speed);
-            shader.SetFloat("alignmentWeight", settings.alignmentFactor);
-            shader.SetFloat("cohesionFactor", settings.cohesionFactor);
-            shader.SetFloat("separationFactor", settings.separationFactor);
-
-
+            shader.SetFloat("boidsMatchingFactor", settings.matchingFactor);
+            shader.SetFloat("boidsCenteringFactor", settings.centeringFactor);
+            shader.SetFloat("boidsAvoidFactor", settings.avoidFactor);
+            shader.SetFloat("boidsTurnFactor", settings.turnFactor);
 
         }
 
@@ -36,13 +36,15 @@ namespace SimulationEngine.Simulations
             
             shader.SetFloat("deltaTime", dt);
             
+            // Boids settings
+            shader.SetFloat("boidsMinSpeed", settings.minSpeed);
+            shader.SetFloat("boidsMaxSpeed", settings.maxSpeed);
             shader.SetFloat("boidsVisualRange", settings.visualRange);
             shader.SetFloat("boidsProtectedRange", settings.protectedRange);
-            shader.SetFloat("boidsSpeed", settings.speed);
-            shader.SetFloat("alignmentWeight", settings.alignmentFactor);
-            shader.SetFloat("cohesionFactor", settings.cohesionFactor);
-            shader.SetFloat("separationFactor", settings.separationFactor);
-
+            shader.SetFloat("boidsMatchingFactor", settings.matchingFactor);
+            shader.SetFloat("boidsCenteringFactor", settings.centeringFactor);
+            shader.SetFloat("boidsAvoidFactor", settings.avoidFactor);
+            shader.SetFloat("boidsTurnFactor", settings.turnFactor);
             
             shader.SetBuffer(kernel, "particleReadBuffer", buffers.Read);
             shader.SetBuffer(kernel, "particleWriteBuffer", buffers.Write);

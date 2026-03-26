@@ -64,8 +64,8 @@ Shader "Custom/UnlitShader"
 
                 float3 rotated =
                     right   * local.x +
-                    up      * local.z +
-                    forward * local.y;
+                    up      * local.y +
+                    forward * local.z;
 
                 // Final position
                 float3 worldPos = rotated + particle.position;

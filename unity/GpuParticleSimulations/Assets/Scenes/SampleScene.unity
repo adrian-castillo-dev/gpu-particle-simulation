@@ -522,7 +522,6 @@ GameObject:
   m_Component:
   - component: {fileID: 684769312}
   - component: {fileID: 684769313}
-  - component: {fileID: 684769314}
   m_Layer: 0
   m_Name: SimulationManager
   m_TagString: Untagged
@@ -557,38 +556,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a4a5b55200333e4b98db7b83fd72eb6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParticleLifeManager
-  mesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
+  mesh: {fileID: -5495902117074765545, guid: 88a7cfe74cb3b0d4ab0e613d246d9a9d, type: 3}
   material: {fileID: 2100000, guid: 0da56d6c9d2dd154d91766ad852ac702, type: 2}
   computeShader: {fileID: 7200000, guid: a162ef64cd6c71f409dd219c814c7e2f, type: 3}
   particleCount: 10000
-  radius: 0.75
-  simulationSize: 50
+  radius: 40
+  simulationSize: 120
   initialSpeed: 0.001
   particleBehavior: 2
   gravitySettings: {fileID: 11400000, guid: 330b65ab920c3124ebd26ede8ef37ff5, type: 2}
   particleLifeSettings: {fileID: 11400000, guid: 33ac17066cdb10a479e6bc5b4c84ae5c, type: 2}
   boidsSettings: {fileID: 11400000, guid: 5f17984b5fb679d4293a93659cb84e66, type: 2}
---- !u!114 &684769314
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 684769310}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8e246b92e76c90c42ba2d4bba630e418, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ParticleLifeCPU
-  particlePrefab: {fileID: 55126371}
-  n: 500
-  dt: 0.02
-  frictionHalfLife: 0.004
-  distanceMax: 13.1
-  types: 6
-  simSize: 26
-  particleRadius: 1
-  forceFactor: 0.4
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0

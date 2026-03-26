@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cfd1becf26bffba438fe234ad7c25803, type: 3}
   m_Name: ParticleLife_Default
   m_EditorClassIdentifier: Assembly-CSharp::SimulationEngine.Settings.ParticleLifeSettings
-  types: 9
+  types: 6
   frictionHalfLife: 0.008
   rMax: 35
   forceFactor: 2
