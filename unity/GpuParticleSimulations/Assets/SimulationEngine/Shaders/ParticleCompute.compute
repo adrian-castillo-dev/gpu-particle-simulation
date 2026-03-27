@@ -33,7 +33,7 @@ float boidsMatchingFactor;
 float boidsCenteringFactor;
 float boidsAvoidFactor;
 float boidsTurnFactor;
-float boidsEnemies;
+int boidsEnemies;
 
 float CalculateForce(float distance, float attraction) {
     float beta = 0.3f;
@@ -150,6 +150,7 @@ void ComputeParticleLifeForces (uint3 id : SV_DispatchThreadID)
             if (distance < 25)
             {
                 averageVelocity -= otherBoid.velocity * 10;
+                averagePosition -= otherBoid.position * 10;
             }
         }
     }
@@ -164,7 +165,7 @@ void ComputeParticleLifeForces (uint3 id : SV_DispatchThreadID)
     boid.velocity += (averageVelocity - boid.velocity) * boidsMatchingFactor;
     boid.velocity += (averagePosition - boid.position) * boidsCenteringFactor;
     
-    float simulationSize =120;
+    float simulationSize =50;
     float margin = simulationSize;
 
     if (boid.position.x < -margin) {

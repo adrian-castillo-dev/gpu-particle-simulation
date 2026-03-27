@@ -1,7 +1,7 @@
 
 # GPU Particle Simulation
  ### Status: Active development
- This project currently implements a large-scale particle simulation that uses the **GPU** to compute gravity behavior and render three-dimensional particles. 
- Additional behavior modes (Boids and Particle Life) are planned and will be built on top of the existing compute-driven core.
+ This project currently implements large-scale particle simulations such as Boids, Gravity and Particle Life that uses the **GPU** to compute behavior and render 3D particles. 
+ I've planned to implement more behaviors and performance upgrades like spatial partitioning which will be added to the already existing behaviors.
 
- *Make sure to open Scenes/SampleScene for the correct scene to load*
+ *Make sure to open Scenes/SampleScene when opening the project for the correct scene to load*
